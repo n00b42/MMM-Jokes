@@ -53,10 +53,27 @@ Module.register('MMM-jokes',{
 
     // Override dom generator.
     getDom: function() {
-        var joke = document.createTextNode(this.decodeHtml(this.joke));
         var wrapper = document.createElement("div");
-        wrapper.className = 'thin large bright';
-        wrapper.appendChild(joke);
+       wrapper.className = 'thin large bright';
+    	
+    	var jokeNode;
+    	
+    	// Array check from http://stackoverflow.com/questions/4775722/check-if-object-is-array
+    	if( Object.prototype.toString.call( this.joke ) === '[object Array]' ){
+    		for (var i=0; i< this.joke.length-1; ++i){
+    			var jokeLine = document.createTextNode(this.decodeHtml(this.joke[i]));
+    			jokeLine.className = 'thin large bright';
+    			wrapper.appendChild(jokeLine);
+    			wrapper.appendChild(document.createElement("br"));
+    		}
+    		var lastJokeLine = document.createTextNode(this.decodeHtml(this.joke[this.joke.length-1]));
+    		lastJokeLine.className = 'thin large bright';
+    		wrapper.appendChild(lastJokeLine);
+    	} else {
+    		jokeNode = document.createTextNode(this.decodeHtml(this.joke));
+            wrapper.appendChild(jokeNode);
+    	}
+   
 
         return wrapper;
     },

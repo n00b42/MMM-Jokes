@@ -48,14 +48,7 @@ var JokeFetcher = function(url, api, reloadInterval) {
                         joke = data.joke;
                         break;
                     case "jonsamazingjokes":
-                    	joke = '';
-                    	var content = data[0].content;
-                    	for (var i=0; i<content.length-1 ; ++i){
-                    		var line = content[i];
-                    		console.log(line);
-                    		joke = joke + line + '<br>';
-                    	}
-                    	joke = joke + content[content.length-1];
+                    	joke = data[0].content; // a string array 
                     	break;
                 }
                 //console.log('got data: '+ joke);
