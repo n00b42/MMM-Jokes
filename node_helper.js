@@ -9,7 +9,7 @@ var NodeHelper = require('node_helper');
 var request = require('request');
 var validUrl = require('valid-url');
 
-var validAPIs = ["ticndb", "tambal", "jonsamzingjokes"];
+var validAPIs = ["ticndb", "tambal", "jonsamazingjokes"];
 var apiUrls = ["http://api.icndb.com/jokes/random", "http://tambal.azurewebsites.net/joke/random", "http://jonsamazingjokes.appspot.com/fetchjokes/randomsingle"];
 
 var JokeFetcher = function(url, api, reloadInterval) {
