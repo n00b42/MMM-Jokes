@@ -54,7 +54,7 @@ Module.register('MMM-jokes',{
     // Override dom generator.
     getDom: function() {
         var wrapper = document.createElement("div");
-       wrapper.className = 'align-right thin medium bright';
+       wrapper.className = 'align-left thin medium';
     	
     	var jokeNode;
     	
@@ -62,12 +62,12 @@ Module.register('MMM-jokes',{
     	if( Object.prototype.toString.call( this.joke ) === '[object Array]' ){
     		for (var i=0; i< this.joke.length-1; ++i){
     			var jokeLine = document.createTextNode(this.decodeHtml(this.joke[i]));
-    			jokeLine.className = 'align-right thin medium normal';
+    			jokeLine.className = 'align-left thin medium normal';
     			wrapper.appendChild(jokeLine);
     			wrapper.appendChild(document.createElement("br"));
     		}
     		var lastJokeLine = document.createTextNode(this.decodeHtml(this.joke[this.joke.length-1]));
-    		lastJokeLine.className = 'align-right thin medium bright';
+    		lastJokeLine.className = 'align-left thin medium bright';
     		wrapper.appendChild(lastJokeLine);
     	} else {
     		jokeNode = document.createTextNode(this.decodeHtml(this.joke));
