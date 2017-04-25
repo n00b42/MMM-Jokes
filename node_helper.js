@@ -53,9 +53,9 @@ var JokeFetcher = function(url, api, reloadInterval) {
                     	for (var i=0; i<content.length-1 ; ++i){
                     		var line = content[i];
                     		console.log(line);
-                    		joke =+ line + '<br>';
+                    		joke = joke + line + '<br>';
                     	}
-                    	joke =+ content[content.length-1];
+                    	joke = joke + content[content.length-1];
                     	break;
                 }
                 //console.log('got data: '+ joke);
