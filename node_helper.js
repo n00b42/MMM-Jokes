@@ -33,10 +33,10 @@ var JokeFetcher = function(url, api, reloadInterval) {
 
         request.get(url, function (error, response, body) {
             if (!error && response.statusCode == 200) {
-                //console.log('Jokes_Helper: '+ body);
+                console.log('Jokes_Helper: '+ body);
                 var data = JSON.parse(body);
-                //console.log(data);
-                //console.log(api);
+                console.log(data);
+                console.log(api);
                 switch (api){
                     case "ticndb":
                         joke = data.value.joke; //TODO custom fields
@@ -52,6 +52,7 @@ var JokeFetcher = function(url, api, reloadInterval) {
                     	var content = data[0].content;
                     	for (var i=0; i<content.length-1 ; ++i){
                     		var line = content[i];
+                    		console.log(line);
                     		joke =+ line + '<br>';
                     	}
                     	joke =+ content[content.length-1];
