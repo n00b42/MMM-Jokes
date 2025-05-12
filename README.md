@@ -1,5 +1,7 @@
-# Module: MMM-jokes
-The `MMM-jokes` module is similar to the complements module but it loads its data from a web API for random jokes
+# Module: MMM-Jokes
+
+The `MMM-Jokes` module can show jokes from a web API.
+
 
 ## Using the module
 
@@ -7,52 +9,35 @@ To use this module, add it to the modules array in the `config/config.js` file:
 ````javascript
 modules: [
 	{
-		module: 'MMM-jokes',
-		position: 'lower_third',	// This can be any of the regions.
-						// Best results in one of the middle regions like: lower_third
+		module: 'MMM-Jokes',
+		position: 'lower_third',
 		config: {
-		    api: 'icndb' //required
+		    url: 'https://v2.jokeapi.dev/joke/Any?type=single', // required
+		    extraction: 'joke', // required most of the time
 		}
 	}
 ]
 ````
 
+## Example APIs
+
+- jokeapi.dev
+`{ url: "https://v2.jokeapi.dev/joke/Any?type=single", extraction: 'joke' }`
+- witzapi.de
+`{ url: "https://witzapi.de/api/joke", extraction: "0/text" }`
+- official-joke-api.appspot.com/
+`{ url: "https://official-joke-api.appspot.com/random_joke", extraction: "setup", extraction2: "punchline" }`
+
 ## Configuration options
 
-The following properties can be configured:
+- `url`: URL for the GET fetch request
+- `extraction`: json path for extraction of actual joke from payload. E.g. `value/0/joke` would extract from `payload.value[0].joke`
+- `extraction2`: optional, equivalent to `extraction` but for an optional punchline / second part.
+- `delay`: delay before fetching first joke (default 2s)
+- `interval`: interval for fetching new jokes (default 10min)
+- `animationSpeed`: animation speed when joke is changed (default 2000)
 
+## Credits
 
-<table width="100%">
-	<!-- why, markdown... -->
-	<thead>
-		<tr>
-			<th>Option</th>
-			<th width="100%">Description</th>
-		</tr>
-	<thead>
-	<tbody>
-
-	  <tr>
-		  <td><code>api</code></td>
-		  <td>What API are we going to use?<br>
-		 	  <br><b>Possible values:</></b> <code>ticndb</code> (http://www.icndb.com/) ,<code>tambal</code> (http://tambal.azurewebsites.net/)
-		 	  <br><b>Default value:</b> <code>ticndb</code>
-		  </td>
-	  </tr>
-
-		<tr>
-			<td><code>updateInterval</code></td>
-			<td>How often does the joke have to change? (Milliseconds)<br>
-				<br><b>Possible values:</b> <code>1000</code> - <code>86400000</code>
-				<br><b>Default value:</b> <code>600000</code> (10 minutes)
-			</td>
-		</tr>
-		<tr>
-			<td><code>fadeSpeed</code></td>
-			<td>Speed of the update animation. (Milliseconds)<br>
-				<br><b>Possible values:</b><code>0</code> - <code>5000</code>
-				<br><b>Default value:</b> <code>4000</code> (4 seconds)
-			</td>
-		</tr>
-	</tbody>
-</table>
+- 2016 Aaron Kable (original module)
+- 2017 Jon Robinson (fork)

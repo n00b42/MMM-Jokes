@@ -1,222 +1,82 @@
-/* Magic Mirror
- * Node Helper: Jokes
+/* Magic Mirror Module Jokes
  *
- * Aaron Kable
+ * 2016 Aaron Kable
+ * 2017 Jon Robinson (fork)
+ * 2025 Maximilian Senftleben (fork)
+ *
  * MIT Licensed.
  */
 
 var NodeHelper = require('node_helper');
-var request = require('request');
-var validUrl = require('valid-url');
 
-var validAPIs = ["ticndb", "tambal", "jonsamazingjokes"];
-var apiUrls = ["http://api.icndb.com/jokes/random", "http://tambal.azurewebsites.net/joke/random", "http://jonsamazingjokes.appspot.com/fetchjokes/randomsingle"];
+function isValidHttpUrl(string) {
+	let url;
+	try {
+		url = new URL(string);
+	} catch (_) {
+		return false;
+	}
+	return url.protocol === "http:" || url.protocol === "https:";
+}
 
-var JokeFetcher = function(url, api, reloadInterval) {
-    var self = this;
-
-    var reloadTimer = null;
-    var joke = '';
-
-    var fetchFailedCallback = function() {};
-    var eventsReceivedCallback = function() {};
-
-    /* fetchJoke()
-     * Initiates joke fetch.
-     */
-    var fetchJoke = function() {
-
-        clearTimeout(reloadTimer);
-        reloadTimer = null;
-
-        //console.log('Getting data: ' + url);
-
-        request.get(url, function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                console.log('Jokes_Helper: '+ body);
-                var data = JSON.parse(body);
-                console.log(data);
-                console.log(api);
-                switch (api){
-                    case "ticndb":
-                        joke = data.value.joke; //TODO custom fields
-                        break;
-                    case "tambal":
-                        joke = data.joke;
-                        break;
-                    case "webknox":
-                        joke = data.joke;
-                        break;
-                    case "jonsamazingjokes":
-                    	joke = data[0].content; // a string array 
-                    	break;
-                }
-                //console.log('got data: '+ joke);
-                self.broadcastEvents();
-                scheduleTimer();
-            } else {
-                //console.error("Jokes_Helper: Could not load Jokes.");
-                console.error("Jokes_Helper: Could not load Jokes, HTTP:"  + response.statusCode);
-                scheduleTimer();
-            }
-        });
-
-
-    };
-
-    /* scheduleTimer()
-     * Schedule the timer for the next update.
-     */
-    var scheduleTimer = function() {
-        //console.log('Schedule update timer.');
-        clearTimeout(reloadTimer);
-        reloadTimer = setTimeout(function() {
-            fetchJoke();
-        }, reloadInterval);
-    };
-
-    /* public methods */
-
-    /* startFetch()
-     * Initiate startFetch();
-     */
-    this.startFetch = function() {
-        fetchJoke();
-    };
-
-    /* broadcastItems()
-     * Broadcast the exsisting events.
-     */
-    this.broadcastEvents = function() {
-        if (joke === '') {
-            //console.log('No events to broadcast yet.');
-            return;
-        }
-        //console.log('Broadcasting: ' + joke);
-        eventsReceivedCallback(self);
-    };
-
-    /* onReceive(callback)
-     * Sets the on success callback
-     *
-     * argument callback function - The on success callback.
-     */
-    this.onReceive = function(callback) {
-        eventsReceivedCallback = callback;
-    };
-
-    /* onError(callback)
-     * Sets the on error callback
-     *
-     * argument callback function - The on error callback.
-     */
-    this.onError = function(callback) {
-        fetchFailedCallback = callback;
-    };
-
-    /* url()
-     * Returns the url of this fetcher.
-     *
-     * return string - The url of this fetcher.
-     */
-    this.url = function() {
-        return url;
-    };
-
-    /* api()
-     * Returns the api of this fetcher.
-     *
-     * return string - The api of this fetcher.
-     */
-    this.api = function() {
-        return api;
-    };
-
-    /* events()
-     * Returns current available events for this fetcher.
-     *
-     * return array - The current available events for this fetcher.
-     */
-    this.joke = function() {
-        return joke;
-    };
-
-};
 
 module.exports = NodeHelper.create({
-    // Override start method.
-    start: function() {
-        var self = this;
-        var joke = '';
-        this.fetchers = [];
-
-        console.log('Starting node helper for: ' + this.name);
-    },
-
-    // Override socketNotificationReceived method.
-    socketNotificationReceived: function(notification, payload) {
-        if (notification === 'ADD_JOKE') {
-            //console.log('ADD_JOKE: ');
-            var apiUrl = apiUrls[0];
-            var currentAPI = validAPIs[0];
-            for (index = 0; index < validAPIs.length; ++index) {
-                if (validAPIs[index] === payload.api){
-                    //console.log(validAPIs[index]);
-                    apiUrl = apiUrls[index];
-                    currentAPI = validAPIs[index];
-                }
-            }
-
-            this.createFetcher(apiUrl, currentAPI, payload.fetchInterval);
-        }
-    },
-
-    /* createFetcher(url, reloadInterval)
-     * Creates a fetcher for a new url if it doesn't exsist yet.
-     * Otherwise it reuses the exsisting one.
-     *
-     * attribute url string - URL of the news feed.
-     * attribute reloadInterval number - Reload interval in milliseconds.
-     */
-
-    createFetcher: function(url, api, fetchInterval) {
-        var self = this;
-        //console.log('processing joke fetcher for url: ' + url + ' - Interval: ' + fetchInterval);
-        if (!validUrl.isUri(url)){
-            self.sendSocketNotification('INCORRECT_URL', {url:url});
-            return;
-        }
-
-        var fetcher;
-        //console.log('processing joke fetcher for url: ' + url + ' - Interval: ' + fetchInterval);
-        if (typeof self.fetchers[url] === 'undefined') {
-            console.log('Create new joke fetcher for url: ' + url + ' - Interval: ' + fetchInterval);
-            fetcher = new JokeFetcher(url, api, fetchInterval);
-
-            fetcher.onReceive(function(fetcher) {
-                //console.log('Broadcast events.');
-                //console.log(fetcher.events());
-
-                self.sendSocketNotification('JOKE_EVENT', {
-                    url: fetcher.url(),
-                    joke: fetcher.joke()
-                });
-            });
-
-            fetcher.onError(function(fetcher, error) {
-                self.sendSocketNotification('FETCH_ERROR', {
-                    url: fetcher.url(),
-                    error: error
-                });
-            });
-
-            self.fetchers[url] = fetcher;
-        } else {
-            //console.log('Use exsisting news fetcher for url: ' + url);
-            fetcher = self.fetchers[url];
-            fetcher.broadcastEvents();
-        }
-
-        fetcher.startFetch();
-    }
+	start: function() {
+		this.fetchers = {};
+	},
+	socketNotificationReceived: function(notification, conf) {
+		if(notification === 'REGISTER_JOKE_FETCHER') {
+			console.log("MMM-Jokes: Register new joke fetcher", conf.url)
+			this.sendSocketNotification('TEST');
+			const self = this
+			if(conf.url.length == 0 || !isValidHttpUrl(conf.url)) {
+				this.sendSocketNotification('INCORRECT_URL', conf.url);
+			} else {
+				if(conf.url in this.fetchers) {
+					clearInterval(this.fetchers[conf.url])
+					delete this.fetchers[conf.url];
+				}
+				setTimeout( () => {
+					const fetchJoke = () => {
+						fetch(conf.url)
+						.then((response) => { if (response.ok) { return response.json(); }; throw new Error('Something went wrong'); })
+						.then((json) => {
+							let joke = json;
+							let joke2 = "";
+							if(conf.extraction.length > 0) {
+								for(const e of conf.extraction.split('/')) {
+									if(isNaN(parseInt(e))) {
+										joke = joke[e];
+									} else {
+										joke = joke[parseInt(e)];
+									}
+								}
+							}
+							if(conf.extraction2.length > 0) {
+								joke2 = json;
+								for(const e of conf.extraction2.split('/')) {
+									if(isNaN(parseInt(e))) {
+										joke2 = joke2[e];
+									} else {
+										joke2 = joke2[parseInt(e)];
+									}
+								}
+								if(joke2.length > 0) {
+									joke = [ joke, joke2 ];
+								}
+							}
+							if(joke.length > 0) {
+								self.sendSocketNotification('JOKE_EVENT', joke);
+							}
+						})
+						.catch((error) => {
+							self.sendSocketNotification('JOKE_FETCH_ERROR', error);
+						})
+					}
+					this.fetchers[conf.url] = setInterval( fetchJoke, conf.interval);
+					fetchJoke();
+				}, conf.delay ?? 0);
+			}
+		}
+	}
 });
